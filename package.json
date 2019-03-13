@@ -7,5 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Alejandro",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.4",
+    "cors": "^2.8.5",
+    "htmlspecialchars": "^1.0.5",
+    "mysql": "^2.16.0"
+  }
 }
