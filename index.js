@@ -57,9 +57,32 @@ app.get('/login', (request, response) => {
             }
         });
     } else {
-        response.status(500).send('Se ha producido un error');
+        response.status(401).send('Usuario o contraseña incorrectos');
     }
 });
+
+app.get('/provincias', (request,response) => {
+    pool.query('SELECT * FROM provincias',(error, result) => {
+        if (error) throw error;
+        if(result.length>0){
+            response.status(200).send(result);
+        }else{
+            response.status(500).json({error:"Ha ocurrido un error"});
+        }
+    });
+});
+
+app.get('/deportes', (request,response) => {
+    pool.query('SELECT * FROM deportes',(error, result) => {
+        if (error) throw error;
+        if(result.length>0){
+            response.status(200).send(result);
+        }else{
+            response.status(500).json({error:"Ha ocurrido un error"});
+        }
+    });
+});
+
 
 app.get('/registro', (request, response) => {
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
