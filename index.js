@@ -14,6 +14,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(express.static('public'));
+
 var bcrypt = require('bcrypt');
 
 const server = app.listen(port, (error) => {
@@ -63,6 +65,17 @@ app.get('/login', (request, response) => {
 
 app.get('/provincias', (request,response) => {
     pool.query('SELECT * FROM provincias',(error, result) => {
+        if (error) throw error;
+        if(result.length>0){
+            response.status(200).send(result);
+        }else{
+            response.status(500).json({error:"Ha ocurrido un error"});
+        }
+    });
+});
+
+app.get('/localidades', (request,response) => {
+    pool.query('SELECT * FROM localidades',(error, result) => {
         if (error) throw error;
         if(result.length>0){
             response.status(200).send(result);
@@ -137,5 +150,58 @@ app.get('/registro', (request, response) => {
     } else {
         response.status(401).json({error:"Usuario o contraseña incorrectos"});
     }
+    
 });
+
+app.post('/crearEvento', (request,response) => {
+    var idUsuario =  request.body.data.id;
+    var localidad = request.body.data.localidad;
+    var provincia = request.body.data.provincia;
+    var descripcion = request.body.data.descripcion;
+    var deporte = request.body.data.deporte;
+    var fecha = request.body.data.fecha;
+    var hora = request.body.data.hora;
+    var participantes = request.body.data.participantes;
+
+    var hoy = new Date();
+    var fechaHoy = hoy.getDate() + "-" + hoy.getMonth() + "-" + hoy.getFullYear();
+    var hour = hora.split(":");
+    
+    if((!isNaN(idUsuario)) && (deporte.toString().length>0) && (deporte.toString().length<21) && (localidad.toString().length>0) && (localidad.toString().length<31) && (provincia.toString().length>0) && (provincia.toString().length<31) && (descripcion.toString().length>0) && (provincia.toString().length<201) && (provincia.toString().length>0) && (provincia.toString().length<21) && (!isNaN(idUsuario)) && (fechaHoy<fecha) && (hour.length==2) && (!isNaN(hour[0])) && (hour[0]<24) && (hour[0]>0) && (hour[0].length==2) && (!isNaN(hour[1])) && (hour[1]<60) && (hour[1]>=0) && (hour[1].length==2) && (!isNaN(participantes)) && (participantes>1) && (participantes<101)){
+        pool.query('SELECT latitud,longitud FROM localidades WHERE nombre = ?',localidad,(error, result) => {
+            if (error) throw error;
+            var longitud;
+            var latitud;
+            if(result.length>0){
+               longitud = result[0].longitud;
+               latitud = result[0].latitud;
+               var fechaTroceada = fecha.split("-");
+               var fechaFormato = new Date(fechaTroceada[2],fechaTroceada[1],fechaTroceada[0]);
+               pool.query('INSERT INTO evento SET idUsuario=?,localidad=?,provincia=?,fecha=?,hora=?,usuariosActuales=1,usuariosMaximos=?,deporte=?,descripcion=?,latitud=?,longitud=?',[idUsuario,localidad,provincia,fechaFormato,hora,participantes,deporte,descripcion,latitud,longitud],(error, result) => {
+                if (error) throw error;
+                if (result.affectedRows > 0) {
+                    var idEvento = result.insertId;
+                    pool.query('INSERT INTO lineaevento SET idEvento=?,idUsuarioInscrito=?',[idEvento,idUsuario],(error, result) => {
+                        if (result.affectedRows > 0) {
+                            response.status(200).json({codigo:"200",mensaje:"Evento insertado correctamente"});
+                        }else{
+                            response.status(500).json({codigo:"500",error:"Ha ocurrido un error"});
+                        }
+                });
+                }else{
+                    response.status(500).json({codigo:"500",error:"Ha ocurrido un error"});
+                }
+            });
+            }else{
+                response.status(500).json({codigo:"500",error:"Ha ocurrido un error"});
+            }
+        });
+    }else{
+        response.status(401).json({codigo:"401",error:"Datos incorrectos"});
+    }
+
+    
+    
+});
+
 

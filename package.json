@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^3.0.4",
+    "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "htmlspecialchars": "^1.0.5",
     "mysql": "^2.16.0"
